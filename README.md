@@ -7,7 +7,6 @@ High contrast colors in both light/dark modes
 Clear visual hierarchy
 Features included:
 Sign up / login forms with validation
-File upload section with PDF preview placeholder
 User dashboard with profile card
 Upload history tracking
 Dark/light mode toggle
