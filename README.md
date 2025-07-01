@@ -1,4 +1,3 @@
-I've implemented everything in a single HTML file with embedded CSS and JavaScript to make it easy to run.
 For mobile responsiveness, I used Tailwind CSS classes and custom media queries.
 For the React-like experience, I created component-style UI sections with state management using localStorage.
 For accessibility:
