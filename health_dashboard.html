@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Record Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --secondary: #10b981;
+            --text: #1f2937;
+            --bg: #f9fafb;
+            --card: #ffffff;
+            --accent: #7c3aed;
+        }
+
+        .dark {
+            --primary: #60a5fa;
+            --secondary: #34d399;
+            --text: #f3f4f6;
+            --bg: #111827;
+            --card: #1f2937;
+            --accent: #8b5cf6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+
+        #pdf-preview {
+            min-height: 300px;
+            width: 100%;
+            border: 2px dashed var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pdf-icon {
+            font-size: 3rem;
+            color: var(--primary);
+        }
+
+        .file-upload-label {
+            cursor: pointer;
+            display: block;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .dashboard-card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            background-color: var(--card);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-history-item {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 0.75rem 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .dark .upload-history-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="max-w-md mx-auto px-4 py-8 md:max-w-lg lg:max-w-2xl">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-primary">HealthTrack</h1>
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:inline"></i>
+            </button>
+        </header>
+
+        <!-- Main Content - Switches between Auth and Dashboard -->
+        <main id="main-content">
+            <!-- Auth View (default) -->
+            <div id="auth-view">
+                <div class="dashboard-card">
+                    <h2 class="text-xl font-semibold mb-4">Welcome to HealthTrack</h2>
+                    
+                    <!-- Tab Navigation -->
+                    <div class="flex border-b mb-4">
+                        <button id="login-tab" class="px-4 py-2 font-medium border-b-2 border-primary">Login</button>
+                        <button id="signup-tab" class="px-4 py-2 font-medium text-gray-500 dark:text-gray-400">Sign Up</button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form id="login-form" class="space-y-4">
+                        <div>
+                            <label for="login-email" class="block mb-1"><i class="fas fa-envelope mr-2"></i>Email</label>
+                            <input type="email" id="login-email" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                        </div>
+                        <div>
+                            <label for="login-password" class="block mb-1"><i class="fas fa-lock mr-2"></i>Password</label>
+                            <input type="password" id="login-password" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                        </div>
+                        <button type="submit" class="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition">Login</button>
+                    </form>
+
+                    <!-- Sign Up Form (hidden by default) -->
+                    <form id="signup-form" class="space-y-4 hidden">
+                        <div>
+                            <label for="signup-name" class="block mb-1"><i class="fas fa-user mr-2"></i>Full Name</label>
+                            <input type="text" id="signup-name" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                        </div>
+                        <div>
+                            <label for="signup-email" class="block mb-1"><i class="fas fa-envelope mr-2"></i>Email</label>
+                            <input type="email" id="signup-email" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                        </div>
+                        <div>
+                            <label for="signup-password" class="block mb-1"><i class="fas fa-lock mr-2"></i>Password</label>
+                            <input type="password" id="signup-password" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                        </div>
+                        <button type="submit" class="w-full bg-secondary text-white py-2 px-4 rounded-lg hover:bg-green-500 transition">Create Account</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Dashboard View (hidden by default) -->
+            <div id="dashboard-view" class="hidden">
+                <!-- User Profile Card -->
+                <div class="dashboard-card">
+                    <div class="flex items-center mb-4">
+                        <div class="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white text-2xl mr-4">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <h2 id="user-name" class="text-xl font-semibold">Loading...</h2>
+                            <p id="user-email" class="text-gray-500 dark:text-gray-400">user@example.com</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600 dark:text-gray-300"><i class="fas fa-file-upload mr-2"></i>Total Uploads:</span>
+                        <span id="total-uploads" class="font-medium">0</span>
+                    </div>
+                </div>
+
+                <!-- Upload Section -->
+                <div class="dashboard-card">
+                    <h2 class="text-xl font-semibold mb-4">Upload Health Record</h2>
+                    
+                    <div id="pdf-preview" class="mb-4">
+                        <div class="text-center">
+                            <i class="fas fa-file-pdf pdf-icon"></i>
+                            <p class="mt-2">No file selected</p>
+                        </div>
+                    </div>
+
+                    <input type="file" id="file-input" accept=".pdf" class="hidden">
+                    <label for="file-input" class="file-upload-label">
+                        <button class="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition flex items-center justify-center">
+                            <i class="fas fa-plus-circle mr-2"></i> Choose PDF File
+                        </button>
+                    </label>
+                    
+                    <div class="mt-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="emergency-contact" class="mr-2 border-gray-300 rounded text-primary focus:ring-primary">
+                            <span>Mark as urgent for doctor review</span>
+                        </label>
+                    </div>
+
+                    <button id="upload-btn" class="w-full mt-4 bg-secondary text-white py-2 px-4 rounded-lg hover:bg-green-500 transition">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i> Upload File
+                    </button>
+                </div>
+
+                <!-- Upload History -->
+                <div class="dashboard-card">
+                    <h2 class="text-xl font-semibold mb-4">Upload History</h2>
+                    <div id="upload-history">
+                        <!-- Sample Items (will be populated dynamically) -->
+                        <div class="upload-history-item">
+                            <i class="fas fa-file-pdf text-red-500 mr-3"></i>
+                            <div class="flex-1">
+                                <div class="font-medium">Medical_Report.pdf</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">July 15, 2023</div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="upload-history-item">
+                            <i class="fas fa-file-pdf text-red-500 mr-3"></i>
+                            <div class="flex-1">
+                                <div class="font-medium">Lab_Results.pdf</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">June 28, 2023</div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // DOM Elements
+        const themeToggle = document.getElementById('theme-toggle');
+        const loginTab = document.getElementById('login-tab');
+        const signupTab = document.getElementById('signup-tab');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const authView = document.getElementById('auth-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const fileInput = document.getElementById('file-input');
+        const pdfPreview = document.getElementById('pdf-preview');
+        const uploadBtn = document.getElementById('upload-btn');
+        const uploadHistory = document.getElementById('upload-history');
+        const userName = document.getElementById('user-name');
+        const userEmail = document.getElementById('user-email');
+        const totalUploads = document.getElementById('total-uploads');
+
+        // State
+        let currentUser = null;
+        let userUploads = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check localStorage for existing user
+            const savedUser = localStorage.getItem('healthDashboardUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showDashboard();
+            }
+
+            // Load any saved uploads
+            const savedUploads = localStorage.getItem('userUploads');
+            if (savedUploads) {
+                userUploads = JSON.parse(savedUploads);
+                renderUploadHistory();
+            }
+        });
+
+        // Theme Toggle
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        });
+
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+
+        // Form Tab Switching
+        loginTab.addEventListener('click', () => {
+            loginTab.classList.add('border-primary', 'text-primary');
+            loginTab.classList.remove('text-gray-500', 'dark:text-gray-400');
+            signupTab.classList.remove('border-primary', 'text-primary');
+            signupTab.classList.add('text-gray-500', 'dark:text-gray-400');
+            loginForm.classList.remove('hidden');
+            signupForm.classList.add('hidden');
+        });
+
+        signupTab.addEventListener('click', () => {
+            signupTab.classList.add('border-primary', 'text-primary');
+            signupTab.classList.remove('text-gray-500', 'dark:text-gray-400');
+            loginTab.classList.remove('border-primary', 'text-primary');
+            loginTab.classList.add('text-gray-500', 'dark:text-gray-400');
+            signupForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+        });
+
+        // Login Form Submission
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            // In a real app, this would be an API call
+            currentUser = {
+                name: 'John Doe',
+                email: email,
+            };
+            
+            localStorage.setItem('healthDashboardUser', JSON.stringify(currentUser));
+            showDashboard();
+        });
+
+        // Signup Form Submission
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            
+            // In a real app, this would be an API call
+            currentUser = {
+                name: name,
+                email: email,
+            };
+            
+            localStorage.setItem('healthDashboardUser', JSON.stringify(currentUser));
+            showDashboard();
+        });
+
+        // File Input Handling
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // In a real app, we would show PDF preview here
+                pdfPreview.innerHTML = `<div class="text-center p-4">
+                    <i class="fas fa-file-pdf pdf-icon"></i>
+                    <p class="mt-2 font-medium">${file.name}</p>
+                    <p class="text-sm">${(file.size / 1024).toFixed(2)} KB</p>
+                </div>`;
+            }
+        });
+
+        // Upload Button Click
+        uploadBtn.addEventListener('click', () => {
+            if (fileInput.files.length === 0) {
+                alert('Please select a file first');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const isUrgent = document.getElementById('emergency-contact').checked;
+            
+            // Create new upload entry
+            const newUpload = {
+                id: Date.now(),
+                name: file.name,
+                date: new Date().toLocaleDateString(),
+                isUrgent: isUrgent
+            };
+
+            userUploads.unshift(newUpload);
+            localStorage.setItem('userUploads', JSON.stringify(userUploads));
+            
+            // Reset form
+            fileInput.value = '';
+            pdfPreview.innerHTML = `<div class="text-center">
+                <i class="fas fa-file-pdf pdf-icon"></i>
+                <p class="mt-2">No file selected</p>
+            </div>`;
+            
+            // Update UI
+            renderUploadHistory();
+        });
+
+        // Helper Functions
+        function showDashboard() {
+            authView.classList.add('hidden');
+            dashboardView.classList.remove('hidden');
+            
+            if (currentUser) {
+                userName.textContent = currentUser.name;
+                userEmail.textContent = currentUser.email;
+                totalUploads.textContent = userUploads.length;
+            }
+        }
+
+        function renderUploadHistory() {
+            uploadHistory.innerHTML = '';
+            totalUploads.textContent = userUploads.length;
+            
+            if (userUploads.length === 0) {
+                uploadHistory.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-4">No uploads yet</p>';
+                return;
+            }
+            
+            userUploads.forEach(upload => {
+                const item = document.createElement('div');
+                item.className = 'upload-history-item';
+                item.innerHTML = `
+                    <i class="fas fa-file-pdf text-red-500 mr-3"></i>
+                    <div class="flex-1">
+                        <div class="font-medium">${upload.name}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">${upload.date}</div>
+                    </div>
+                    ${upload.isUrgent ? '<span class="bg-red-500 text-white text-xs px-2 py-1 rounded mr-2">URGENT</span>' : ''}
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                `;
+                uploadHistory.appendChild(item);
+            });
+        }
+
+        // Logout functionality (not in UI but available for debugging)
+        function logout() {
+            localStorage.removeItem('healthDashboardUser');
+            currentUser = null;
+            authView.classList.remove('hidden');
+            dashboardView.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
+
